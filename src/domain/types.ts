@@ -84,7 +84,8 @@ export interface CareTask {
   doneBy: string | null
 }
 
-export type MemberRole = 'owner' | 'member'
+/** `invited`: invitación pendiente; pasa a `member` cuando esa persona inicia sesión. */
+export type MemberRole = 'owner' | 'member' | 'invited'
 
 export interface GardenMember {
   gardenId: string

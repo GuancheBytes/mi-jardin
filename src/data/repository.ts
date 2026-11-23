@@ -52,4 +52,10 @@ export interface GardenRepository {
   listMembers(gardenId: string): Promise<GardenMember[]>
   inviteMember(gardenId: string, email: string): Promise<void>
   removeMember(gardenId: string, userId: string): Promise<void>
+
+  /**
+   * Opcional: avisa cuando otro miembro cambia algo del jardín (tiempo real).
+   * Devuelve la función para cancelar la suscripción.
+   */
+  subscribe?(gardenId: string, onChange: (table: 'plants' | 'care_tasks' | 'zones') => void): () => void
 }

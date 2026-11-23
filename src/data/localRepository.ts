@@ -125,7 +125,8 @@ export function createLocalRepository(storage: Storage = localStorage): GardenRe
     inviteMember: (gardenId, email) =>
       mutate((s) => {
         if (s.members.some((m) => m.gardenId === gardenId && m.email === email)) return
-        s.members.push({ gardenId, userId: newId(), email, role: 'member' })
+        // En la demo nadie puede iniciar sesión, así que la invitación queda pendiente.
+        s.members.push({ gardenId, userId: `invite:${email}`, email, role: 'invited' })
       }),
     removeMember: (gardenId, userId) =>
       mutate((s) => {
