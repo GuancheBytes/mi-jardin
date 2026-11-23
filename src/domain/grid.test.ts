@@ -1,4 +1,4 @@
-import { chebyshev, containsPoint, isCellOccupied, isInsideGarden, rectsOverlap, zoneAt } from './grid'
+import { chebyshev, containsPoint, firstFreeCell, isCellOccupied, isInsideGarden, rectsOverlap, zoneAt } from './grid'
 import type { Zone } from './types'
 
 const garden = { cols: 10, rows: 8 }
@@ -52,6 +52,16 @@ describe('grid', () => {
     expect(isCellOccupied(items, { x: 1, y: 1 })).toBe(true)
     expect(isCellOccupied(items, { x: 1, y: 1 }, 'p1')).toBe(false)
     expect(isCellOccupied(items, { x: 2, y: 1 })).toBe(false)
+  })
+
+  it('encuentra la primera celda libre de un rectángulo', () => {
+    const rect = { x: 0, y: 0, width: 2, height: 2 }
+    const items = [
+      { id: 'a', x: 0, y: 0 },
+      { id: 'b', x: 1, y: 0 },
+    ]
+    expect(firstFreeCell(rect, items)).toEqual({ x: 0, y: 1 })
+    expect(firstFreeCell({ x: 0, y: 0, width: 2, height: 1 }, items)).toBeNull()
   })
 
   it('calcula la distancia de Chebyshev', () => {

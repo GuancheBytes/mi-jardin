@@ -38,6 +38,19 @@ export function isCellOccupied<T extends GridPoint & { id: string }>(
   return items.some((i) => i.id !== excludeId && i.x === point.x && i.y === point.y)
 }
 
+/** Primera celda libre dentro de un rectángulo, recorriendo por filas. */
+export function firstFreeCell<T extends GridPoint & { id: string }>(
+  rect: GridRect,
+  items: T[],
+): GridPoint | null {
+  for (let y = rect.y; y < rect.y + rect.height; y++) {
+    for (let x = rect.x; x < rect.x + rect.width; x++) {
+      if (!isCellOccupied(items, { x, y })) return { x, y }
+    }
+  }
+  return null
+}
+
 /** Distancia de Chebyshev: las 8 celdas de alrededor están a distancia 1. */
 export function chebyshev(a: GridPoint, b: GridPoint): number {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y))
