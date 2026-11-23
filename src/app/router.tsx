@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router'
+import { GardenMapPage } from '@/features/garden-map/GardenMapPage'
 import { Layout } from './Layout'
 
 function Placeholder({ title }: { title: string }) {
@@ -11,7 +12,7 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Placeholder title="Hoy" /> },
-      { path: 'mapa', element: <Placeholder title="Mapa" /> },
+      { path: 'mapa', element: <GardenMapPage /> },
       { path: 'plantas', element: <Placeholder title="Plantas" /> },
       { path: 'temporada', element: <Placeholder title="Temporada" /> },
       { path: 'ajustes', element: <Placeholder title="Ajustes" /> },
