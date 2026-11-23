@@ -222,6 +222,17 @@ scripts/         generador del SQL semilla
 
 React 19 · Vite · TypeScript (modo estricto) · Tailwind CSS 4 · React Router · TanStack Query · Zustand · Supabase (Auth, Postgres con RLS, Storage, Realtime) · vite-plugin-pwa · Vitest + Testing Library.
 
+## Desplegar en Vercel
+
+El repo incluye `vercel.json`. Ese archivo redirige todas las rutas a `index.html` para que React Router funcione al recargar, y hace que el service worker no se quede en caché.
+
+1. Entra en [vercel.com](https://vercel.com) con tu cuenta de GitHub y pulsa **Add New… → Project**.
+2. Importa el repositorio `mi-jardin`. Vercel detecta Vite solo; no cambies nada.
+3. **Sin variables de entorno**, la app se publica en modo demo. Cada visitante tiene su propio jardín de ejemplo en su navegador.
+4. Para usar Supabase, añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en **Settings → Environment Variables** y vuelve a desplegar. Añade también la URL de Vercel (`https://….vercel.app`) a *Redirect URLs* en Supabase.
+
+Cada `git push` a `main` despliega de nuevo automáticamente. Las ramas y pull requests tienen su propia URL de vista previa.
+
 ## PWA
 
 - Se puede instalar en el móvil: *Añadir a pantalla de inicio* en Android o *Compartir → Añadir a inicio* en iOS.
