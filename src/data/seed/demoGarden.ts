@@ -92,6 +92,15 @@ export function createDemoData(today: string): DemoData {
     done('c19', 'p-menta-1', 'abonado', 20),
     done('c20', 'p-tomate-1', 'poda', 4),
     done('c21', 'p-tomate-1', 'abonado', 15),
+    done('c22', 'p-romero-1', 'poda', 50),
+    done('c23', 'p-tomate-2', 'poda', 3),
+    done('c24', 'p-tomate-2', 'abonado', 5),
+    done('c25', 'p-zanahoria-1', 'riego', 1),
+    done('c26', 'p-cebolla-1', 'riego', 4),
+    done('c27', 'p-albahaca-1', 'poda', 5),
+    done('c28', 'p-albahaca-1', 'abonado', 10),
+    done('c29', 'p-judia-1', 'riego', 3),
+    done('c30', 'p-lechuga-1', 'abonado', 8),
   ]
 
   return {

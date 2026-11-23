@@ -8,12 +8,15 @@ import {
   type Garden,
   type GridPoint,
   type GridRect,
+  type PlantHealth,
   type Zone,
 } from '@/domain'
 import { useCurrentGarden } from '@/data/currentGarden'
 import { usePlantMutations, usePlants, useSpecies, useZoneMutations, useZones } from '@/data/hooks'
 import { ErrorMessage, Loading } from '@/ui'
+import { useGardenTasks } from '@/features/tasks/useGardenTasks'
 import { GardenGrid } from './GardenGrid'
+import { HealthLegend } from './HealthLegend'
 import { MapToolbar } from './MapToolbar'
 import { useMapStore, type DragItem } from './mapStore'
 import { SpeciesPalette } from './SpeciesPalette'
@@ -40,12 +43,16 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
   const selectedSpeciesId = useMapStore((s) => s.selectedSpeciesId)
   const say = useMapStore((s) => s.say)
 
+  const { healthOf } = useGardenTasks(gardenId)
+
   const [newZoneRect, setNewZoneRect] = useState<GridRect | null>(null)
   const [editingZone, setEditingZone] = useState<Zone | null>(null)
 
   if (zones.isLoading || plants.isLoading) return <Loading />
   const zoneList = zones.data ?? []
   const plantList = plants.data ?? []
+  const healthCounts: Record<PlantHealth, number> = { sana: 0, 'necesita-riego': 0, atrasada: 0 }
+  for (const p of plantList) healthCounts[healthOf(p.id)]++
 
   function placeSpecies(speciesId: string, cell: GridPoint) {
     if (isCellOccupied(plantList, cell)) return say('Esa casilla ya tiene una planta.')
@@ -101,6 +108,7 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
         zones={zoneList}
         plants={plantList}
         speciesById={byId}
+        healthOf={healthOf}
         dropHint={(cell) => (isCellOccupied(plantList, cell, dragPlantId()) ? 'blocked' : 'ok')}
         onDrop={handleDrop}
         onCellClick={(cell) => selectedSpeciesId && placeSpecies(selectedSpeciesId, cell)}
@@ -108,6 +116,8 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
         onZoneClick={setEditingZone}
         onPlantClick={(plant) => void navigate(`/plantas/${plant.id}`)}
       />
+
+      <HealthLegend counts={healthCounts} />
 
       <p role="status" aria-live="polite" className="min-h-6 text-sm text-stone-600">
         {message}
