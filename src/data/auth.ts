@@ -31,7 +31,8 @@ export async function sendMagicLink(email: string): Promise<void> {
   if (!supabase) return
   const { error } = await supabase.auth.signInWithOtp({
     email: email.trim(),
-    options: { emailRedirectTo: window.location.origin },
+    // BASE_URL es '/' en local y '/mi-jardin/' en GitHub Pages.
+    options: { emailRedirectTo: new URL(import.meta.env.BASE_URL, window.location.origin).href },
   })
   if (error) throw new Error(error.message)
 }

@@ -7,17 +7,21 @@ import { SettingsPage } from '@/features/settings/SettingsPage'
 import { TodayPage } from '@/features/tasks/TodayPage'
 import { Layout } from './Layout'
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Layout />,
-    children: [
-      { index: true, element: <TodayPage /> },
-      { path: 'mapa', element: <GardenMapPage /> },
-      { path: 'plantas', element: <PlantsPage /> },
-      { path: 'plantas/:plantId', element: <PlantDetailPage /> },
-      { path: 'temporada', element: <SeasonPage /> },
-      { path: 'ajustes', element: <SettingsPage /> },
-    ],
-  },
-])
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Layout />,
+      children: [
+        { index: true, element: <TodayPage /> },
+        { path: 'mapa', element: <GardenMapPage /> },
+        { path: 'plantas', element: <PlantsPage /> },
+        { path: 'plantas/:plantId', element: <PlantDetailPage /> },
+        { path: 'temporada', element: <SeasonPage /> },
+        { path: 'ajustes', element: <SettingsPage /> },
+      ],
+    },
+  ],
+  // En GitHub Pages la app vive en /mi-jardin/ (ver BASE_PATH en vite.config.ts).
+  { basename: import.meta.env.BASE_URL },
+)

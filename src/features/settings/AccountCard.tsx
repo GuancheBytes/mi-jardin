@@ -30,7 +30,7 @@ export function AccountCard({ demo }: { demo: boolean }) {
                 variant="danger"
                 onClick={() => {
                   resetDemoData()
-                  window.location.assign('/')
+                  window.location.assign(import.meta.env.BASE_URL)
                 }}
               >
                 Restablecer

@@ -222,16 +222,25 @@ scripts/         generador del SQL semilla
 
 React 19 · Vite · TypeScript (modo estricto) · Tailwind CSS 4 · React Router · TanStack Query · Zustand · Supabase (Auth, Postgres con RLS, Storage, Realtime) · vite-plugin-pwa · Vitest + Testing Library.
 
-## Desplegar en Vercel
+## Desplegar en GitHub Pages
 
-El repo incluye `vercel.json`. Ese archivo redirige todas las rutas a `index.html` para que React Router funcione al recargar, y hace que el service worker no se quede en caché.
+El workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) pasa el lint y los tests, genera la build y la publica en `https://<usuario>.github.io/mi-jardin/` en cada push a `main`.
 
-1. Entra en [vercel.com](https://vercel.com) con tu cuenta de GitHub y pulsa **Add New… → Project**.
-2. Importa el repositorio `mi-jardin`. Vercel detecta Vite solo; no cambies nada.
-3. **Sin variables de entorno**, la app se publica en modo demo. Cada visitante tiene su propio jardín de ejemplo en su navegador.
-4. Para usar Supabase, añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en **Settings → Environment Variables** y vuelve a desplegar. Añade también la URL de Vercel (`https://….vercel.app`) a *Redirect URLs* en Supabase.
+Solo hay que activarlo una vez: en el repo, **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
-Cada `git push` a `main` despliega de nuevo automáticamente. Las ramas y pull requests tienen su propia URL de vista previa.
+Detalles:
+
+- **Ruta base.** La app vive en `/mi-jardin/`, no en `/`. El workflow lo indica con `BASE_PATH`, y Vite, React Router y la PWA lo usan a través de `import.meta.env.BASE_URL`. En local sigue siendo `/`.
+- **Rutas al recargar.** GitHub Pages no sabe que `/mi-jardin/mapa` es una ruta de la app. El workflow copia `index.html` como `404.html`: cualquier ruta carga la app y React Router muestra la pantalla correcta.
+- **Modo demo por defecto.** Para usar Supabase, crea los *secrets* `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en **Settings → Secrets and variables → Actions**, y añade `https://<usuario>.github.io/mi-jardin/` a *Redirect URLs* en Supabase.
+
+Para probar la versión de Pages en local:
+
+```bash
+BASE_PATH=/mi-jardin/ npm run build && npm run preview
+```
+
+En PowerShell: `$env:BASE_PATH='/mi-jardin/'; npm run build; npm run preview`.
 
 ## PWA
 
