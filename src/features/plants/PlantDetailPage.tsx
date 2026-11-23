@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { CARE_KINDS, zoneAt, type Garden, type Plant } from '@/domain'
 import { useCurrentGarden } from '@/data/currentGarden'
 import { usePlantMutations, usePlants, useSpecies, useZones } from '@/data/hooks'
+import { CompanionsCard } from '@/features/companions/CompanionsCard'
 import { PlantCareCard } from '@/features/tasks/PlantCareCard'
 import { Button, Card, EmptyState, ErrorMessage, Loading, Modal } from '@/ui'
 import { CARE_LABELS } from './careLabels'
@@ -86,6 +87,7 @@ function PlantDetail({ garden }: { garden: Garden }) {
       </Card>
 
       <PlantCareCard plant={plant} />
+      <CompanionsCard plant={plant} />
 
       {sp && (
         <Card>

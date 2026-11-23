@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
+  companionsAt,
+  summarizeCompanions,
+  type CompanionMatch,
   isCellOccupied,
   isInsideGarden,
   rectsOverlap,
@@ -12,10 +15,19 @@ import {
   type Zone,
 } from '@/domain'
 import { useCurrentGarden } from '@/data/currentGarden'
-import { usePlantMutations, usePlants, useSpecies, useZoneMutations, useZones } from '@/data/hooks'
+import {
+  useCompanionRules,
+  usePlantMutations,
+  usePlants,
+  useSpecies,
+  useZoneMutations,
+  useZones,
+} from '@/data/hooks'
 import { ErrorMessage, Loading } from '@/ui'
+import { CompanionNotice } from '@/features/companions/CompanionNotice'
+import { plantName } from '@/features/plants/format'
 import { useGardenTasks } from '@/features/tasks/useGardenTasks'
-import { GardenGrid } from './GardenGrid'
+import { GardenGrid, type DropHint } from './GardenGrid'
 import { HealthLegend } from './HealthLegend'
 import { MapToolbar } from './MapToolbar'
 import { useMapStore, type DragItem } from './mapStore'
@@ -45,14 +57,41 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
 
   const { healthOf } = useGardenTasks(gardenId)
 
+  const rules = useCompanionRules().data ?? []
+
   const [newZoneRect, setNewZoneRect] = useState<GridRect | null>(null)
   const [editingZone, setEditingZone] = useState<Zone | null>(null)
+  const [notice, setNotice] = useState<{ title: string; matches: CompanionMatch[] } | null>(null)
 
   if (zones.isLoading || plants.isLoading) return <Loading />
   const zoneList = zones.data ?? []
   const plantList = plants.data ?? []
   const healthCounts: Record<PlantHealth, number> = { sana: 0, 'necesita-riego': 0, atrasada: 0 }
   for (const p of plantList) healthCounts[healthOf(p.id)]++
+
+  /** Especie que se está arrastrando y planta a excluir (si se mueve una existente). */
+  function dragged(item: DragItem | null) {
+    if (!item) return null
+    if (item.kind === 'species') return { speciesId: item.speciesId, excludeId: undefined }
+    const plant = plantList.find((p) => p.id === item.plantId)
+    return plant ? { speciesId: plant.speciesId, excludeId: plant.id } : null
+  }
+
+  function dropHint(cell: GridPoint): DropHint {
+    const d = dragged(useMapStore.getState().drag)
+    if (!d) return 'ok'
+    if (isCellOccupied(plantList, cell, d.excludeId)) return 'blocked'
+    const { good, bad } = summarizeCompanions(companionsAt(cell, d.speciesId, plantList, rules, d.excludeId))
+    return bad > 0 ? 'bad' : good > 0 ? 'good' : 'ok'
+  }
+
+  function announce(name: string, speciesId: string, cell: GridPoint, excludeId?: string) {
+    const matches = companionsAt(cell, speciesId, plantList, rules, excludeId)
+    const { good, bad } = summarizeCompanions(matches)
+    const summary = bad > 0 ? ` ⚠️ ${bad} incompatible${bad > 1 ? 's' : ''} cerca` : good > 0 ? ' ✅ buena compañía' : ''
+    say(null)
+    setNotice({ title: `${name} colocada.${summary}`, matches })
+  }
 
   function placeSpecies(speciesId: string, cell: GridPoint) {
     if (isCellOccupied(plantList, cell)) return say('Esa casilla ya tiene una planta.')
@@ -65,7 +104,7 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
       notes: '',
       ...cell,
     })
-    say(`${byId.get(speciesId)?.name ?? 'Planta'} plantada.`)
+    announce(byId.get(speciesId)?.name ?? 'Planta', speciesId, cell)
   }
 
   function handleDrop(item: DragItem, cell: GridPoint) {
@@ -79,6 +118,7 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
     }
     if (isCellOccupied(plantList, cell, plant.id)) return say('Esa casilla ya tiene una planta.')
     plantMutations.update.mutate({ ...plant, ...cell })
+    announce(plantName(plant, byId.get(plant.speciesId)), plant.speciesId, cell, plant.id)
   }
 
   function handleZoneDrawn(rect: GridRect) {
@@ -109,7 +149,7 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
         plants={plantList}
         speciesById={byId}
         healthOf={healthOf}
-        dropHint={(cell) => (isCellOccupied(plantList, cell, dragPlantId()) ? 'blocked' : 'ok')}
+        dropHint={dropHint}
         onDrop={handleDrop}
         onCellClick={(cell) => selectedSpeciesId && placeSpecies(selectedSpeciesId, cell)}
         onZoneDrawn={handleZoneDrawn}
@@ -117,11 +157,14 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
         onPlantClick={(plant) => void navigate(`/plantas/${plant.id}`)}
       />
 
-      <HealthLegend counts={healthCounts} />
-
-      <p role="status" aria-live="polite" className="min-h-6 text-sm text-stone-600">
+      {notice && (
+        <CompanionNotice title={notice.title} matches={notice.matches} speciesById={byId} onClose={() => setNotice(null)} />
+      )}
+      <p role="status" aria-live="polite" className="text-sm text-stone-600 empty:hidden">
         {message}
       </p>
+
+      <HealthLegend counts={healthCounts} />
 
       <ZoneDialog open={newZoneRect !== null} onSave={saveNewZone} onClose={() => setNewZoneRect(null)} />
       <ZoneDialog
@@ -136,9 +179,4 @@ function GardenMapEditor({ garden }: { garden: Garden }) {
       />
     </div>
   )
-}
-
-function dragPlantId(): string | undefined {
-  const drag = useMapStore.getState().drag
-  return drag?.kind === 'plant' ? drag.plantId : undefined
 }
